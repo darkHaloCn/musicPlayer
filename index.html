@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>泉少专用播放器</title>
+		<link rel="stylesheet" href="css/day7.css">
+		<script src="js/vue.js"></script>
+		<script src="js/axios.min.js"></script>
+	</head>
+	<body>
+		<div id="app">
+			<!-- 头部 -->
+			<div class="header">
+				<span>耳悦 - 祝你做个好梦</span>
+				<input type="text" v-model="musicname" @keyup.enter="getmusic()">
+			</div>
+			<!-- 主体 -->
+			<div id="main">
+				<div class="left">
+					<li v-for="item in music" @click="getmusicid(item.id)">
+						{{item.name}}
+					</li>
+				</div>
+				<div class="content">
+					<div class="box">
+						<img :src="imgurl" >
+					</div>
+				</div>
+				<div class="right">
+					<h4>热门评论</h4>
+					<li v-for="item in rep">
+						{{item.content}}
+					</li>
+				</div>
+			</div>
+			<!-- 底部 -->
+			<div id="footer">
+				<audio controls="controls" autoplay="autoplay" loop="loop" :src="musicurl">
+					{{musicurl}}
+				</audio>
+				
+			</div>
+		</div>
+	</body>
+	<script>
+		new Vue({
+			el:'#app',
+			data:{
+				musicname:'星弟',
+				music:[],
+				artists:[],
+				musicurl:'',
+				imgurl:'http://q2.qlogo.cn/headimg_dl?dst_uin=525180891&spec=100',
+				rep:[]
+			},
+			methods:{
+				getmusic(){
+					var that = this
+					axios.get('https://autumnfish.cn/search?keywords='+this.musicname)
+					.then(function(res){
+						 // console.log(res.data.result.songs)
+						that.music = res.data.result.songs
+					})
+					.catch(function(err){
+						console.log(err)
+					})
+					// console.log(this.city)
+				},
+				getmusicid(id){
+					var that = this
+					axios.get('https://autumnfish.cn/song/url?id='+id)
+					.then(function(res){
+						// console.log(res.data.data[0].url)
+						that.musicurl = res.data.data[0].url
+					})
+					.catch(function(err){
+						console.log(err)
+					})
+					// 歌曲详情获取
+					axios.get('https://autumnfish.cn/song/detail?ids='+id)
+					.then(function(res){
+							that.imgurl = res.data.songs[0].al.picUrl
+							// console.log(that.imgurl)
+						})
+					.catch(function(err){
+							console.log(err)
+						})
+					// 歌曲评论获取
+					axios.get('https://autumnfish.cn/comment/music?id='+id+'&limit=1')
+					.then(function(res){
+							// console.log(res.data.hotComments)
+							that.rep = res.data.hotComments
+						})
+					.catch(function(err){
+							console.log(err)
+						})
+				}
+				
+			}
+		})
+		
+		
+	</script>
+</html>
